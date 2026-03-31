@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TravelMind AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Mulish:wght@300;400;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:       #0F1A0D;
+    --surface:  #162013;
+    --border:   #2A3D27;
+    --green:    #3D6B35;
+    --lime:     #7CBF5E;
+    --gold:     #C8972A;
+    --amber:    #E8B84B;
+    --cream:    #F0E6C8;
+    --muted:    rgba(240,230,200,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Mulish', sans-serif;
+    background: var(--bg);
+    color: var(--cream);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ── Top bar ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .logo-mark {
+    width: 38px; height: 38px;
+    background: var(--gold);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .logo-text h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    letter-spacing: 0.08em;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .logo-text p {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .status {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--lime);
+    animation: blink 2s infinite;
+  }
+
+  @keyframes blink {
+    0%,100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+  }
+
+  /* ── Body: sidebar + chat ── */
+  .body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── Sidebar ── */
+  aside {
+    width: 220px;
+    min-width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px 14px;
+    gap: 6px;
+    overflow-y: auto;
+  }
+
+  aside h3 {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--lime);
+    padding: 0 6px;
+    margin-bottom: 4px;
+  }
+
+  .chip {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px 12px;
+    font-size: 0.76rem;
+    color: var(--cream);
+    cursor: pointer;
+    font-family: 'Mulish', sans-serif;
+    text-align: left;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    line-height: 1.4;
+  }
+
+  .chip:hover {
+    border-color: var(--lime);
+    color: var(--lime);
+    background: rgba(124,191,94,0.07);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 10px 0;
+  }
+
+  .clear-btn {
+    margin-top: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 9px;
+    color: var(--muted);
+    font-size: 0.74rem;
+    font-family: 'Mulish', sans-serif;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+
+  .clear-btn:hover { border-color: var(--gold); color: var(--amber); }
+
+  /* ── Chat area ── */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Subtle kente pattern as bg texture */
+  main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg,   transparent, transparent 39px, rgba(42,61,39,0.25) 40px),
+      repeating-linear-gradient(90deg,  transparent, transparent 39px, rgba(42,61,39,0.15) 40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+    scroll-behavior: smooth;
+  }
+
+  #chat::-webkit-scrollbar { width: 3px; }
+  #chat::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* Welcome */
+  .welcome {
+    margin: auto;
+    text-align: center;
+    animation: up 0.5s ease;
+  }
+
+  .welcome-icon {
+    font-size: 2.8rem;
+    display: block;
+    margin-bottom: 14px;
+  }
+
+  .welcome h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.2rem;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+
+  .welcome p {
+    font-size: 0.82rem;
+    color: var(--muted);
+    max-width: 320px;
+    margin: 0 auto;
+    line-height: 1.65;
+  }
+
+  @keyframes up {
+    from { opacity:0; transform:translateY(12px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+
+  /* Messages */
+  .row {
+    display: flex;
+    gap: 10px;
+    animation: up 0.25s ease;
+    max-width: 780px;
+  }
+
+  .row.user { align-self: flex-end; flex-direction: row-reverse; }
+  .row.bot  { align-self: flex-start; }
+
+  .av {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .av.bot-av  { background: var(--green); }
+  .av.user-av { background: rgba(200,151,42,0.25); border: 1px solid var(--gold); }
+
+  .bubble {
+    padding: 11px 16px;
+    border-radius: 12px;
+    font-size: 0.84rem;
+    line-height: 1.7;
+    max-width: 580px;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .row.bot  .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top-left-radius: 3px;
+  }
+
+  .row.user .bubble {
+    background: rgba(61,107,53,0.5);
+    border: 1px solid rgba(124,191,94,0.25);
+    border-top-right-radius: 3px;
+  }
+
+  /* Typing */
+  .dots { display:flex; gap:5px; align-items:center; padding:2px 0; }
+  .dots span {
+    width:6px; height:6px;
+    background: var(--lime);
+    border-radius: 50%;
+    animation: pulse 1.2s infinite;
+  }
+  .dots span:nth-child(2) { animation-delay:.2s; }
+  .dots span:nth-child(3) { animation-delay:.4s; }
+
+  @keyframes pulse {
+    0%,80%,100% { opacity:.2; transform:scale(.8); }
+    40%          { opacity:1;  transform:scale(1); }
+  }
+
+  /* ── Input bar ── */
+  .input-bar {
+    padding: 14px 28px 16px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 5px 5px 5px 16px;
+    transition: border-color .2s;
+  }
+
+  .input-row:focus-within { border-color: var(--lime); }
+
+  #input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'Mulish', sans-serif;
+    font-size: 0.86rem;
+    color: var(--cream);
+    padding: 7px 0;
+  }
+
+  #input::placeholder { color: var(--muted); }
+
+  .send {
+    width: 36px; height: 36px;
+    background: var(--green);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    transition: background .15s, transform .1s;
+    flex-shrink: 0;
+  }
+
+  .send:hover  { background: var(--lime); }
+  .send:active { transform: scale(.92); }
+
+  .hint {
+    text-align: center;
+    font-size: 0.62rem;
+    color: rgba(240,230,200,0.18);
+    margin-top: 6px;
+    letter-spacing: .06em;
+  }
+
+  /* Gold accent bar at bottom */
+  .accent-bar {
+    height: 3px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--gold)  0 20px,
+      var(--green) 20px 40px,
+      var(--lime)  40px 60px,
+      var(--amber) 60px 80px
+    );
+  }
+
+  @media(max-width:600px){
+    aside { display:none; }
+    #chat { padding:14px 16px; }
+    .input-bar { padding:10px 14px 12px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-mark">🌍</div>
+  <div class="logo-text">
+    <h1>TravelMind AI</h1>
+    <p>African Destinations for Moroccan Travelers</p>
+  </div>
+  <div class="status">
+    <div class="dot"></div>
+    Online
+  </div>
+</header>
+
+<div class="body">
+
+  <aside>
+    <h3>✦ Try asking</h3>
+
+    <button class="chip" onclick="prefill(this)">Cheap beach without visa</button>
+    <button class="chip" onclick="prefill(this)">Plan 5 days in Kenya $2000</button>
+    <button class="chip" onclick="prefill(this)">Best safari destinations</button>
+    <button class="chip" onclick="prefill(this)">Honeymoon in Africa</button>
+    <button class="chip" onclick="prefill(this)">Safe solo travel</button>
+    <button class="chip" onclick="prefill(this)">Budget trip under $1000</button>
+
+    <div class="divider"></div>
+
+    <button class="clear-btn" onclick="clearChat()">🗑 Clear chat</button>
+  </aside>
+
+  <main>
+    <div id="chat">
+      <div class="welcome" id="welcome">
+        <span class="welcome-icon">🌍</span>
+        <h2>Where to next?</h2>
+        <p>Ask me about African destinations, visas, budgets, or let me build your full itinerary.</p>
+      </div>
+    </div>
+
+    <div class="input-bar">
+      <div class="input-row">
+        <input id="input" type="text"
+               placeholder="Ask about African destinations..."
+               autocomplete="off"/>
+        <button class="send" onclick="send()" title="Send">➤</button>
+      </div>
+      <div class="hint">Enter to send · type "reset" to start over</div>
+    </div>
+
+    <div class="accent-bar"></div>
+  </main>
+</div>
+
+<script>
+  const chat  = document.getElementById('chat');
+  const input = document.getElementById('input');
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+  });
+
+  function prefill(btn) {
+    input.value = btn.textContent.trim();
+    input.focus();
+  }
+
+  function removeWelcome() {
+    const w = document.getElementById('welcome');
+    if (w) w.remove();
+  }
+
+  function addMsg(role, text) {
+    removeWelcome();
+    const row    = document.createElement('div');
+    row.className = 'row ' + role;
+
+    const av = document.createElement('div');
+    av.className = 'av ' + (role === 'user' ? 'user-av' : 'bot-av');
+    av.textContent = role === 'user' ? '✈' : '🌍';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+
+    row.appendChild(av);
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+    return row;
+  }
+
+  function addThinking() {
+    removeWelcome();
+    const row = document.createElement('div');
+    row.className = 'row bot';
+
+    const av = document.createElement('div');
+    av.className = 'av bot-av';
+    av.textContent = '🌍';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = '<div class="dots"><span></span><span></span><span></span></div>';
+
+    row.appendChild(av);
+    row.appendChild(bubble);
+    chat.appendChild(row);
+    chat.scrollTop = chat.scrollHeight;
+    return row;
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+
+    if (text.toLowerCase() === 'reset') { clearChat(); return; }
+
+    addMsg('user', text);
+    const thinking = addThinking();
+
+    try {
+      const res  = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text }),
+      });
+      const data = await res.json();
+      thinking.remove();
+      addMsg('bot', data.response || data.error || 'No response.');
+    } catch {
+      thinking.remove();
+      addMsg('bot', '⚠ Could not reach the server. Make sure Flask is running on http://localhost:5000');
+    }
+  }
+
+  async function clearChat() {
+    try { await fetch('/reset', { method: 'POST' }); } catch (_) {}
+    chat.innerHTML = `
+      <div class="welcome" id="welcome">
+        <span class="welcome-icon">🌍</span>
+        <h2>Where to next?</h2>
+        <p>Ask me about African destinations, visas, budgets, or let me build your full itinerary.</p>
+      </div>`;
+  }
+</script>
+</body>
+</html>
